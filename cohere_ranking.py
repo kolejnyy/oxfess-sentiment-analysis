@@ -12,7 +12,7 @@ import numpy as np
 import college_filter as clf
 from tqdm import tqdm
 
-co = cohere.Client('{apikey}')
+#co = cohere.Client('{apikey}')
 
 examples = [	Example("i think we can all agree that the cinderella girl at ball stole the show", "Positive Review"),
 				Example("How closely do they check scholars gowns? I barely passed prelims - can I just buy and wear one for the flex???", "Neutral Review"),
@@ -125,13 +125,12 @@ result_dict =  {'Balliol': 0.36005022464285713,
 				'University': -0.36395036517241375,
 				'Wadham': 0.43760745736842105,
 				'Worcester': 0.2342276753846154,
-				'Wycliffe Hall': None,
 				'Union': -0.4667067216058394}
 
-for college_name in college_list:
-	score = get_college_score(college_name)
-	print(college_name, score)
-	result_dict[college_name] = score
+# for college_name in college_list:
+# 	score = get_college_score(college_name)
+# 	print(college_name, score)
+# 	result_dict[college_name] = score
 
 
-print("\n\n\n", result_dict)
+# print("\n\n\n", result_dict)
