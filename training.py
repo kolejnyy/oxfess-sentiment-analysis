@@ -9,22 +9,23 @@ from time import time
 
 epochs = 1000
 batch_per_ep = 100
-interval = 10
+batch_size = 32
+interval = 25
 
-exp_name = 'lstm'
-load_path = 'weights/lstm/weights_2000.pth'
+exp_name = 'bilstm'
+load_path = None#'weights/lstm/weights_2000.pth'
 
 batch_gen = BatchGenerator()
 
 criterion = nn.MSELoss()
-l_r = 0.001
+l_r = 0.0003
 
 vocab_size 		= batch_gen.vocab_size
 embedding_dim 	= 200
 hidden_dim 		= 256
 n_layers 		= 2
-bidirectional 	= False
-lstm_dropout 	= 0.3
+bidirectional 	= True
+lstm_dropout 	= 0.2
 dropout 		= 0.3
 
 # ===================== Model ======================
@@ -49,7 +50,7 @@ for i in range(epochs):
 	start_time = time()
 	
 	for j in range(batch_per_ep):
-		input, target = batch_gen.generate_batch()
+		input, target = batch_gen.generate_batch(batch_size=batch_size)
 		output, hs = analyzer(input)
 		loss = criterion(output, target)
 		loss.backward()
