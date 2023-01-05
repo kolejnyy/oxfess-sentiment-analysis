@@ -16,37 +16,33 @@ from corpus_builder import build_data
 from batch_generator import BatchGenerator
 import torch
 from torch import nn, functional as F, optim
+from models import LSTM_Analyzer
 
-class NNet(nn.Module):
-	def __init__(self) -> None:
-		super().__init__()
+batch_ep = 10000
+interval = 100
 
-		self.fc1 = nn.Linear(8, 128)
-		self.fc2 = nn.Linear(128, 512)
-		self.fc3 = nn.Linear(512, 512)
-		self.fc4 = nn.Linear(512, 1)
+exp_name = 'lstm'
+load_path = 'weights/lstm/weights_500.pth'
 
-		self.sigmoid = nn.Sigmoid()
+analyzer = LSTM_Analyzer(bidirectional=True)
+batch_gen = BatchGenerator()
+criterion = nn.MSELoss()
+optimizer = optim.Adam(analyzer.parameters(), lr=0.001)
+
+analyzer.load_state_dict(torch.load(load_path))
+
+last_losses = [1]*50
+
+for i in range(batch_ep):
+	input, target = batch_gen.generate_batch()
+	output, hs = analyzer(input)
+	loss = criterion(output, target)
+	loss.backward()
+	optimizer.step()
+	optimizer.zero_grad()
+	last_losses = last_losses[1:] + [loss.item()]
+	print("Batch {}/{}:\tloss = {:.4f}\t    avg50_loss = {:.4f}".format(i+1, batch_ep, loss.item(), np.mean(last_losses)))
 	
-	def forward(self, x):
-		x = F.relu(self.fc1(x))
-		x = F.relu(self.fc2(x))
-		x = F.relu(self.fc3(x))
-		x = self.sigmoid(self.fc4(x))
-		return x
-
-
-model = NNet()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
-loss_fn = nn.CrossEntropyLoss()
-
-batches = []
-epochs = 10
-
-for i in range(epochs):
-	for input, target in batches:
-		optimizer.zero_grad()
-		output = model(input)
-		loss = loss_fn(output, target)
-		loss.backward()
-		optimizer.step()
+	if i%interval == interval-1:
+		torch.save(analyzer.state_dict(), 'weights/{}/weights_{}.pth'.format(exp_name, i+1))
+		print("Saved weights")

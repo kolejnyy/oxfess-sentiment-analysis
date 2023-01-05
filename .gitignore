@@ -2,3 +2,5 @@
 *.pyc
 *.csv
 *.json
+*.pth
+tester.py

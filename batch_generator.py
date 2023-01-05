@@ -14,6 +14,7 @@ class BatchGenerator:
 			self.words = json.load(f)
 		self.words = list(self.words.keys())
 		self.words = {self.words[i]: i for i in range(len(self.words))}
+		self.vocab_size = len(self.words)
 
 		self.data = pd.read_csv('data/cleared_data.csv')
 		self.data = self.data.sample(frac=1).reset_index(drop=True)
@@ -36,8 +37,6 @@ class BatchGenerator:
 	def generate_batch(self, batch_size=32):
 		length = np.random.choice(self.uniq_train_lengths, p=self.batch_prob)
 		indices = np.random.choice(self.length_dict[length], batch_size)
-		batch = torch.zeros(batch_size, length, len(self.words))
-		for i in range(batch_size):
-			for j, word in enumerate(self.data.iloc[indices[i]]['text'].split()):
-				batch[i, j, self.words[word]] = 1
-		return batch
+		input = torch.Tensor([[self.words[word] for word in self.data.iloc[indices[i]]['text'].split()] for i in range(batch_size)]).long()
+		target = torch.Tensor([self.data.iloc[idx]['label'] for idx in indices]).float()
+		return input, target
